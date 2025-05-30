@@ -1,0 +1,6 @@
+Flask==3.0.3
+pyttsx3
+SpeechRecognition
+pyaudio
+pyserial
+ffmpeg
