@@ -2,82 +2,165 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8" />
-    <title>슬롯 음성 제어</title>
+    <title>Callet</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
     <style>
+        :root {
+            --bg-color: #f8f9fa;
+            --text-color: #212529;
+            --card-color: #ffffff;
+            --hover-color: #e0ebff;
+            --badge-default: #6c757d;
+        }
+
+        body.dark-mode {
+            --bg-color: #212529;
+            --text-color: #f8f9fa;
+            --card-color: #343a40;
+            --hover-color: #495057;
+            --badge-default: #adb5bd;
+        }
+
         body {
-            background-color: #f8f9fa;
+            background-color: var(--bg-color);
+            color: var(--text-color);
             padding-top: 60px;
+            font-size: 1.25rem;
+            font-family: 'Noto Sans KR', sans-serif;
+            line-height: 1.6;
+            transition: background-color 0.3s, color 0.3s;
         }
+
         .container {
-            max-width: 600px;
+            max-width: 650px;
+            padding: 0 1rem;
         }
+
         .slot-card {
-            background-color: #ffffff;
-            padding: 15px 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-            margin-bottom: 12px;
+            background-color: var(--card-color);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+            margin-bottom: 14px;
             display: flex;
-            justify-content: space-between;
-            align-items: center;
+            flex-direction: column;
+            justify-content: center;
             transition: background-color 0.3s ease;
+            font-size: 3rem;
         }
-        .slot-card:hover {
-            background-color: #e9f0ff;
+
+        .slot-card:hover, .slot-card:focus {
+            background-color: var(--hover-color);
+            outline: 3px solid #0d6efd66;
         }
+
+        .slot-card span:last-child {
+            align-self: flex-end;
+            margin-top: 2px;
+        }
+
         .badge-slot {
-            font-size: 1rem;
-            padding: 0.6em 0.9em;
-            font-weight: 600;
+            width: 3rem;
+            height: 3rem;
+            background-color: #0d6efd;  /* 원하는 색상 */
+            color: white;
+            font-size: 1.6rem;           /* 더 크게 */
+            font-weight: 700;
             border-radius: 50%;
-            min-width: 40px;
-            min-height: 40px;
-            display: inline-flex;
+            display: flex;
             justify-content: center;
             align-items: center;
-            color: white;
+            line-height: 1;              /* 수직 가운데 */
+            flex-shrink: 0;
+            font-family: system-ui, sans-serif;  /* 명시적으로 지정 */
         }
-        /* 슬롯 번호에 따른 색상 예시 */
+
+
+
         .badge-slot-1 { background-color: #0d6efd; }
         .badge-slot-2 { background-color: #198754; }
         .badge-slot-3 { background-color: #dc3545; }
         .badge-slot-4 { background-color: #ffc107; color: #212529; }
         .badge-slot-5 { background-color: #6f42c1; }
-        /* 기본 색상 */
-        .badge-slot-default { background-color: #6c757d; }
+        .badge-slot-default { background-color: var(--badge-default); }
 
         .footer {
             margin-top: 40px;
-            font-size: 14px;
-            color: #aaa;
+            font-size: 1rem;
+            color: #999;
             text-align: center;
         }
+
         #statusText {
             margin-bottom: 1rem;
-            font-weight: 500;
-            color: #555;
-            min-height: 1.2em;
+            font-weight: 600;
+            min-height: 1.4em;
+        }
+
+        .hint-text {
+            font-size: 1.05rem;
+            margin-bottom: 1rem;
+        }
+
+        .theme-toggle {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            z-index: 999;
+            font-size: 0.9rem;
+        }
+
+        #listenBtn {
+            font-size: 1.4rem;
+            padding: 1em 2em;
+            width: 100%;
+        }
+
+        .swal2-confirm-custom {
+            background-color: #0d6efd !important;
+            color: white !important;
+            font-size: 1.4rem !important;
+            padding: 1rem !important;
+            border-radius: 8px !important;
+            border: none !important;
+            width: 100% !important;
+            max-width: 320px;
+            margin-top: 1rem;
+            cursor: pointer;
+            outline: none;
+        }
+
+        @media (max-width: 480px) {
+            .slot-card {
+                font-size: 1rem;
+                padding: 16px;
+            }
         }
     </style>
 </head>
 <body>
+    <div class="theme-toggle">
+        <button id="toggleThemeBtn" class="btn btn-outline-secondary btn-sm">🌙 다크 모드</button>
+    </div>
+
     <div class="container text-center">
-        <h2 class="mb-4">🎙️ 슬롯 음성 명령 제어</h2>
+        <h2 class="mb-3">🎙️ AI 기반 음성 인식 지갑</h2>
+        <p class="hint-text">💡 예시: 저장 시 → “저장 롯데카드 1” | 이동 시 → “롯데카드” | 삭제 시 → “삭제 롯데카드”</p>
 
         <div id="statusText"></div>
-        <button class="btn btn-primary btn-lg mb-4" id="listenBtn">🎤 음성 명령 듣기</button>
+        <button class="btn btn-primary btn-lg mb-4" id="listenBtn">🎤 음성 명령 </button>
 
         <ul class="list-unstyled" id="slotList"></ul>
 
-        <div class="footer">© 2025 YourApp. All rights reserved.</div>
+        <div class="footer">© 2025 Callet. All rights reserved.</div>
     </div>
 
     <script>
         const statusText = document.getElementById('statusText');
         const listenBtn = document.getElementById('listenBtn');
+        const toggleThemeBtn = document.getElementById('toggleThemeBtn');
 
-        // 슬롯 번호별 색상 클래스 반환
         function getBadgeClass(num) {
             switch(num) {
                 case 1: return 'badge-slot-1';
@@ -96,33 +179,137 @@
                 const data = await res.json();
                 const list = Object.entries(data)
                     .map(([key, val]) => `
-                    <li class="slot-card" tabindex="0" role="button" aria-pressed="false">
-                        <span><strong>${key}</strong></span>
-                        <span class="badge-slot ${getBadgeClass(val)}">${val}</span>
-                    </li>`)
+                        <li class="slot-card" tabindex="0" role="button" aria-pressed="false">
+                            <span><strong>${key}</strong></span>
+                            <span class="badge-slot ${getBadgeClass(val)}">${val}</span>
+                        </li>`)
                     .join("");
                 document.getElementById("slotList").innerHTML = list;
             } catch (e) {
                 statusText.textContent = "슬롯 정보를 불러오는데 실패했습니다.";
+                speak("슬롯 정보를 불러오지 못했습니다.");
             }
         }
 
-        listenBtn.addEventListener('click', async () => {
+        function speak(text) {
+            if (!window.speechSynthesis) return;
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'ko-KR';
+            speechSynthesis.speak(utterance);
+        }
+
+        listenBtn.addEventListener('click', () => {
+            if (!('SpeechRecognition' in window) && !('webkitSpeechRecognition' in window)) {
+                statusText.textContent = "이 브라우저는 음성 인식을 지원하지 않습니다.";
+                speak("이 브라우저는 음성 인식을 지원하지 않습니다.");
+                return;
+            }
+
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            const recognition = new SpeechRecognition();
+            recognition.lang = 'ko-KR';
+            recognition.interimResults = false;
+            recognition.maxAlternatives = 1;
+
             statusText.textContent = "음성 인식 중... 잠시만 기다려주세요.";
+            speak("음성 명령을 듣고 있어요.");
             listenBtn.disabled = true;
 
-            try {
-                const res = await fetch("/listen");
-                if (!res.ok) throw new Error("음성 명령 처리 실패");
-                const result = await res.json();
-                statusText.textContent = "명령 처리 완료!";
-            } catch(e) {
-                statusText.textContent = "음성 명령 처리 중 오류가 발생했습니다.";
-            } finally {
+            recognition.onresult = async (event) => {
+                const transcript = event.results[0][0].transcript;
+                statusText.textContent = `인식된 명령: "${transcript}"`;
+                speak(`"${transcript}" 명령을 처리합니다`);
+
+                try {
+                    const res = await fetch('/listen', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({command: transcript})
+                    });
+                    const data = await res.json();
+
+                    statusText.textContent = data.message || "명령 처리 완료!";
+                    speak(data.message || "명령이 처리되었습니다.");
+
+                    Swal.fire({
+                        icon: 'success',
+                        title: '처리 완료!',
+                        text: data.message || '명령이 성공적으로 처리되었습니다.',
+                        confirmButtonText: '확인',
+                        customClass: {
+                            popup: 'fs-5',
+                            confirmButton: 'swal2-confirm-custom'
+                        },
+                        buttonsStyling: false,
+                        allowOutsideClick: false,
+                        background: isDarkMode() ? '#343a40' : '',
+                        color: isDarkMode() ? '#fff' : ''
+                    });
+
+                } catch (error) {
+                    statusText.textContent = "음성 명령 처리 중 오류가 발생했습니다.";
+                    speak("음성 명령 처리 중 오류가 발생했습니다.");
+
+                    Swal.fire({
+                        icon: 'error',
+                        title: '오류 발생',
+                        text: '음성 명령 처리에 실패했어요. 다시 시도해주세요.',
+                        confirmButtonText: '확인',
+                        customClass: { popup: 'fs-5' },
+                        background: isDarkMode() ? '#343a40' : '',
+                        color: isDarkMode() ? '#fff' : '',
+                    });
+                } finally {
+                    listenBtn.disabled = false;
+                    setTimeout(() => { statusText.textContent = ""; }, 4000);
+                }
+            };
+
+            recognition.onerror = (event) => {
+                statusText.textContent = `음성 인식 실패: ${event.error}`;
+                speak("음성 인식에 실패했습니다. 다시 시도해주세요.");
                 listenBtn.disabled = false;
-                setTimeout(() => statusText.textContent = "", 4000);
-            }
+
+                Swal.fire({
+                    icon: 'error',
+                    title: '음성 인식 실패',
+                    text: '다시 시도해주세요.',
+                    confirmButtonText: '확인',
+                    customClass: { popup: 'fs-5' },
+                    background: isDarkMode() ? '#343a40' : '',
+                    color: isDarkMode() ? '#fff' : '',
+                });
+
+                setTimeout(() => { statusText.textContent = ""; }, 4000);
+            };
+
+            recognition.start();
         });
+
+        function isDarkMode() {
+            return document.body.classList.contains('dark-mode');
+        }
+
+        function applyTheme(mode) {
+            if (mode === 'dark') {
+                document.body.classList.add('dark-mode');
+                toggleThemeBtn.textContent = '☀️ 라이트 모드';
+            } else {
+                document.body.classList.remove('dark-mode');
+                toggleThemeBtn.textContent = '🌙 다크 모드';
+            }
+            localStorage.setItem('theme', mode);
+        }
+
+        toggleThemeBtn.addEventListener('click', () => {
+            const newMode = isDarkMode() ? 'light' : 'dark';
+            applyTheme(newMode);
+        });
+
+        (function initTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            applyTheme(savedTheme);
+        })();
 
         fetchSlots();
         setInterval(fetchSlots, 2000);
